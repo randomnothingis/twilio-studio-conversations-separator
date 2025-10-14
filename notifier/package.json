@@ -1,0 +1,18 @@
+{
+  "name": "studio-separator-notifier",
+  "main": "index.js",
+  "version": "1.0.0",
+  "description": "Http function to receive requests from Twilio Studio and publish messages to Pub/Sub.",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {  
+    "@google-cloud/functions-framework": "^4.0.0",
+    "twilio": "^5.10.2",
+    "express": "^4.19.2",
+    "axios": "^1.6.8",
+    "@google-cloud/pubsub": "^4.3.0",
+    "dotenv": "^16.4.5"
+  }
+}
+

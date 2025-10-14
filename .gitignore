@@ -1,0 +1,16 @@
+google-cloud-sdk/
+node_modules/
+.DS_Store
+*.log
+*.env
+.vscode/
+.idea/
+*.iml
+out/
+dist/
+build/
+coverage/
+archive/
+*.zip
+*.tar.gz
+

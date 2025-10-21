@@ -26,19 +26,20 @@ app.post('/', async (req, res) => {
      const { 
         flowSid,
         executionSid, 
-        conversationSid, 
+        conversationSid,
+        serviceSid
     } = req.body;
 
-    if (!flowSid || !executionSid || !conversationSid) {
-        console.error('Missing required SIDs in Twilio payload. Notifying failure, but responding 200 to Twilio.', req.body);
-        // Important: Always respond 200 OK to Twilio to prevent retries of invalid requests
-        return res.status(200).send('Missing required SIDs. Aborting task delegation.');
+    if (!flowSid || !executionSid || !conversationSid || !serviceSid) {
+        console.error('Missing required SIDs in Twilio payload.', req.body);
+        return res.status(400).send('Missing required SIDs. Aborting task delegation.');
     }
 
     const payload = {
         flowSid: flowSid,
         executionSid: executionSid,
-        conversationSid: conversationSid
+        conversationSid: conversationSid,
+        serviceSid: serviceSid || null
     };
 
     try {
@@ -55,7 +56,7 @@ app.post('/', async (req, res) => {
     } catch (error) {
         console.error('Error publishing to Pub/Sub:', error);
         // Respond 200 OK to Twilio, but log a severe internal error
-        res.status(200).send('Internal error while publishing task. Check service logs for Pub/Sub failure.');
+        res.status(500).send('Internal error while publishing task.');
     }
 });
 

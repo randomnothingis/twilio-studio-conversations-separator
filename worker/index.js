@@ -62,9 +62,11 @@ async function pollStudioExecution(flowSid, executionSid) {
 
 /**
  * Deletes the Studio-related webhooks from the conversation using the user-provided logic.
+ * @param {string} serviceSid - The SID of the conversation service.
  * @param {string} conversationSid - The SID of the conversation.
- */
-async function deleteStudioWebhooks(conversationSid) {
+*/
+
+async function deleteStudioWebhooks(serviceSid, conversationSid) {
     if (!twilioClient) {
         throw new Error('Twilio client is not initialized due to missing credentials.');
     }
@@ -73,6 +75,7 @@ async function deleteStudioWebhooks(conversationSid) {
         console.log(`Fetching webhooks for conversation ${conversationSid}`);
 
         const webhooks = await twilioClient.conversations.v1
+            .services(serviceSid)
             .conversations(conversationSid)
             .webhooks.list();
 
@@ -92,6 +95,7 @@ async function deleteStudioWebhooks(conversationSid) {
         for (const webhook of studioWebhooks) {
             console.log(`Removing webhook SID: ${webhook.sid}`);
             await twilioClient.conversations.v1
+                .services(serviceSid)
                 .conversations(conversationSid)
                 .webhooks(webhook.sid)
                 .remove();
@@ -101,7 +105,7 @@ async function deleteStudioWebhooks(conversationSid) {
         console.log('All Studio webhooks removed successfully.');
     } catch (error) {
         console.error('Error while deleting Studio webhooks:', error);
-        throw new Error('Webhook deletion failed. This will trigger a Pub/Sub retry.');
+        // throw new Error('Webhook deletion failed. This will trigger a Pub/Sub retry.');
     }
 }
 
@@ -122,13 +126,13 @@ app.post('/', async (req, res) => {
             Buffer.from(req.body.message.data, 'base64').toString()
         );
 
-        const { flowSid, executionSid, conversationSid } = pubSubMessage;
+        const { flowSid, executionSid, conversationSid, serviceSid } = pubSubMessage;
         
         console.log(`\n--- Worker received task for Conversation: ${conversationSid}, Execution: ${executionSid} ---`);
 
         if (!twilioClient) {
             console.error('CRITICAL: Twilio client not initialized. Cannot proceed.');
-            return res.status(500).send('Server misconfiguration: Missing Twilio credentials.');
+            return res.status(200).send('Server misconfiguration: Missing Twilio credentials.');
         }
 
         // 1. Poll the Studio execution status
@@ -142,7 +146,7 @@ app.post('/', async (req, res) => {
         }
         
         // 2. Delete the webhooks
-        await deleteStudioWebhooks(conversationSid);
+        await deleteStudioWebhooks(serviceSid, conversationSid);
         
         console.log('Task fully completed. Acknowledging message.');
         
@@ -150,11 +154,9 @@ app.post('/', async (req, res) => {
         return res.status(204).send();
 
     } catch (error) {
-        // If any step in the try block fails (e.g., webhook deletion), this catches it.
-        console.error('FATAL ERROR during task processing. Pub/Sub will retry:', error);
-        
-        // Failure: Return 500 to signal Pub/Sub to retry the message later
-        return res.status(500).send('Task failed. Pub/Sub will retry.');
+
+        console.error('FATAL ERROR during task processing.', error);        
+        return res.status(200).send('Task failed. Dont retry.');
     }
 });
 

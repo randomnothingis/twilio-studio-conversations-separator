@@ -64,7 +64,8 @@ eyJleGVjdXRpb25TaWQiOiJGTlhYIiwiZmxvd1NpZCI6IkZXWFgiLCJjb252ZXJzYXRpb25TaWQiOiJD
 ```curl -X POST http://localhost:8081 -H "Content-type: application/json" -d @./test-data.json```
 
 
-
+## Permissions
+- Env and storage object admin
 
 
 ## Deployment (GCP Cloud Run)

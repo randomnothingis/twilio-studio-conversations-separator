@@ -9,7 +9,9 @@
     "start:local": "concurrently \"npm run start:notifier\" \"npm run start:worker\""
   },
   "devDependencies": {
-   "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "google-auth-library": "^10.5.0"
   }
 }
-
